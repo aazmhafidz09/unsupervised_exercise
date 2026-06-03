@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kunci Jawaban Agglomerative Hierarchical Clustering</title>
+  <style>
+    :root{
+      --bg:#f4f7fb; --card:#ffffff; --text:#1f2937; --muted:#667085; --line:#d8e2ef;
+      --primary:#2563eb; --primary-soft:#e8f0ff; --success:#12b76a; --warning:#f59e0b;
+      --shadow:0 12px 28px rgba(15,23,42,.08); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#f8fbff 0%,#eef4fb 100%);color:var(--text);line-height:1.55}
+    header{padding:32px 42px 22px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.75)}
+    h1{margin:0 0 8px;font-size:clamp(28px,4vw,48px);line-height:1;letter-spacing:-.05em;font-weight:850}
+    header p{margin:0;color:var(--muted);font-size:18px;max-width:1000px}
+    .page{max-width:1380px;margin:0 auto;padding:26px;display:flex;flex-direction:column;gap:22px}
+    .topbar{display:flex;gap:16px;flex-wrap:wrap}
+    .pill{padding:10px 14px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:800;color:#334155;box-shadow:var(--shadow)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+    h2{margin:0 0 14px;font-size:24px;letter-spacing:-.02em}
+    table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:#fff}
+    th,td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 14px;font-size:14px;text-align:left;vertical-align:middle}
+    th:last-child,td:last-child{border-right:0}
+    tr:last-child td{border-bottom:0}
+    th{background:#f8fafc;font-weight:850;color:#1e293b}
+    td.center,th.center{text-align:center}
+    .matrix-wrap,.dendro-wrap{overflow:auto;max-width:100%}
+    .matrix th,.matrix td{text-align:center;min-width:84px;padding:10px}
+    .matrix td:first-child,.matrix th:first-child{position:sticky;left:0;background:#f8fafc;font-weight:850;z-index:1}
+    .chipbar{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:7px 10px;border-radius:999px;background:#f8fafc;border:1px solid var(--line);font-family:"SFMono-Regular",Consolas,Menlo,monospace;font-size:13px;font-weight:700}
+    .callout{border:1px solid var(--line);border-left:5px solid var(--primary);background:#fbfdff;border-radius:14px;padding:16px 18px;margin-top:14px}
+    .dendro-wrap{border:1px solid var(--line);border-radius:16px;background:#fcfdff;padding:14px}
+    .dendro-svg{width:100%;min-width:760px;height:auto;display:block}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{border:1px solid var(--line);background:#fff;color:#334155;border-radius:12px;padding:11px 14px;font-weight:750;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .small{color:var(--muted);font-size:13px}
+    @media print{.actions{display:none!important}body{background:#fff}.card,.pill{box-shadow:none}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Kunci Jawaban — Agglomerative Hierarchical Clustering</h1>
+    <p>Halaman ini menampilkan jawaban lengkap untuk latihan studi kasus area belajar kampus, termasuk matriks jarak, urutan penggabungan cluster, hasil saat K = 3, dan grafik dendrogram.</p>
+  </header>
+
+  <main class="page">
+    <div class="topbar">
+      <div class="pill">Studi Kasus: Area Belajar Kampus</div>
+      <div class="pill">Linkage: <span id="pillLinkage" style="margin-left:6px">Single</span></div>
+      <div class="pill">Jumlah Data: <span id="pillData" style="margin-left:6px">8</span></div>
+      <div class="pill">Target Cluster: 3</div>
+    </div>
+
+    <div class="actions">
+      <a href="latihan_agglomerative_studi_kasus_ruang_kampus.html" class="btn">Kembali ke Halaman Latihan</a>
+      <button class="btn primary" onclick="window.print()">Cetak / Simpan PDF</button>
+    </div>
+
+    <section class="card">
+      <h2>Data Studi Kasus</h2>
+      <table id="dataTable"></table>
+    </section>
+
+    <section class="card">
+      <h2>Matriks Jarak Antar-Data Awal</h2>
+      <div class="matrix-wrap" id="matrixContainer"></div>
+    </section>
+
+    <section class="card">
+      <h2>Urutan Penggabungan Cluster</h2>
+      <table id="stepsTable"></table>
+      <div class="callout">
+        <b>Hasil saat K = 3:</b>
+        <div id="k3Clusters" class="chipbar" style="margin-top:10px"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Grafik Dendrogram</h2>
+      <div class="dendro-wrap">
+        <svg id="dendrogramSvg" class="dendro-svg" viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <p class="small">Garis putus-putus oranye menunjukkan batas pemotongan sebelum jumlah cluster berubah dari 3 menjadi 2.</p>
+    </section>
+  </main>
+
+<script>
+const defaultInput = `A, 1.0, 2.0
+B, 2.3, 2.8
+C, 3.1, 4.2
+D, 7.2, 7.8
+E, 8.5, 6.7
+F, 7.6, 2.9
+G, 9.4, 2.2
+H, 2.1, 8.5`;
+const locationNames = {
+  A: "Ruang Baca Tenang", B: "Sudut Perpustakaan", C: "Meja Diskusi Kecil", D: "Kantin Jam Sibuk",
+  E: "Student Lounge", F: "Selasar Gedung", G: "Dekat Lapangan", H: "Ruang Ujian Tenang"
+};
+let points = [], matrix = [], steps = [];
+function round3(x){ return Math.round((x + Number.EPSILON) * 1000) / 1000; }
+function fmt(x){ return round3(x).toFixed(3).replace(/\.000$/, ''); }
+function parseNum(v){ return parseFloat(String(v).trim().replace(',', '.')); }
+function clusterName(c){ return c.slice().sort().join(''); }
+function pairKey(c1,c2){ return [clusterName(c1), clusterName(c2)].sort().join('-'); }
+function distance(p,q){ return Math.hypot(p.x-q.x, p.y-q.y); }
+function parseData(text){
+  return text.trim().split(/\n+/).map(line=>line.split(',').map(s=>s.trim())).filter(p=>p.length>=3).map(parts=>({
+    label:parts[0].toUpperCase(), x:parseNum(parts[1]), y:parseNum(parts[2]), name:locationNames[parts[0].toUpperCase()] || `Area ${parts[0].toUpperCase()}`
+  })).filter(p=>!Number.isNaN(p.x) && !Number.isNaN(p.y)).sort((a,b)=>a.label.localeCompare(b.label));
+}
+function pointByLabel(label){ return points.find(p=>p.label===label); }
+function pointDistanceByLabel(a,b){ return distance(pointByLabel(a), pointByLabel(b)); }
+function makeMatrix(){
+  const n = points.length;
+  const m = Array.from({length:n},()=>Array(n).fill(0));
+  for(let i=0;i<n;i++) for(let j=0;j<n;j++) m[i][j] = i===j ? 0 : distance(points[i],points[j]);
+  return m;
+}
+function clusterDistance(c1,c2,method){
+  const distances = [];
+  for(const a of c1) for(const b of c2) distances.push(pointDistanceByLabel(a,b));
+  if(method==='single') return Math.min(...distances);
+  if(method==='complete') return Math.max(...distances);
+  return distances.reduce((s,v)=>s+v,0)/distances.length;
+}
+function agglomerative(method){
+  let clusters = points.map(p=>[p.label]);
+  const result = [];
+  while(clusters.length>1){
+    let best = null;
+    for(let i=0;i<clusters.length;i++) for(let j=i+1;j<clusters.length;j++){
+      const d = clusterDistance(clusters[i],clusters[j],method);
+      const key = `${round3(d).toFixed(3)}|${pairKey(clusters[i],clusters[j])}`;
+      if(!best || key < best.key) best = {i,j,d,key,c1:clusters[i],c2:clusters[j]};
+    }
+    const merged = [...best.c1,...best.c2].sort();
+    clusters = clusters.filter((_,idx)=>idx!==best.i && idx!==best.j);
+    clusters.push(merged);
+    clusters.sort((a,b)=>clusterName(a).localeCompare(clusterName(b)));
+    result.push({step:result.length+1,c1:best.c1.slice().sort(),c2:best.c2.slice().sort(),merged,distance:best.d,clusterCount:clusters.length,clusters:clusters.map(c=>c.slice().sort())});
+  }
+  return result;
+}
+function getParams(){
+  const p = new URLSearchParams(location.search);
+  return {data: p.get('data') ? decodeURIComponent(p.get('data')) : defaultInput, linkage: (p.get('linkage') || 'single').toLowerCase()};
+}
+function renderDataTable(){
+  let html = `<thead><tr><th>Label</th><th>Area Belajar</th><th class="center">Kebisingan</th><th class="center">Kepadatan Aktivitas</th></tr></thead><tbody>`;
+  for(const p of points) html += `<tr><td>${p.label}</td><td>${p.name}</td><td class="center">${p.x}</td><td class="center">${p.y}</td></tr>`;
+  html += `</tbody>`;
+  document.getElementById('dataTable').innerHTML = html;
+}
+function renderMatrix(){
+  let html = `<table class="matrix"><thead><tr><th>Data</th>`;
+  for(const p of points) html += `<th>${p.label}</th>`;
+  html += `</tr></thead><tbody>`;
+  for(let i=0;i<points.length;i++){
+    html += `<tr><td>${points[i].label}</td>`;
+    for(let j=0;j<points.length;j++){
+      if(i===j) html += `<td>0</td>`;
+      else if(i>j) html += `<td style="color:#98a2b3">—</td>`;
+      else html += `<td>${fmt(matrix[i][j])}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table>`;
+  document.getElementById('matrixContainer').innerHTML = html;
+}
+function renderStepsTable(){
+  let html = `<thead><tr><th class="center">Tahap</th><th>Cluster yang Digabung</th><th class="center">Jarak</th><th class="center">Jumlah Cluster</th><th>Cluster Tersisa</th></tr></thead><tbody>`;
+  for(const s of steps){
+    html += `<tr><td class="center"><b>${s.step}</b></td><td>{${clusterName(s.c1).split('').join(',')}} + {${clusterName(s.c2).split('').join(',')}}</td><td class="center">${fmt(s.distance)}</td><td class="center">${s.clusterCount}</td><td>${s.clusters.map(c=>`{${clusterName(c).split('').join(',')}}`).join(' ; ')}</td></tr>`;
+  }
+  html += `</tbody>`;
+  document.getElementById('stepsTable').innerHTML = html;
+  const k3 = steps.find(s=>s.clusterCount===3);
+  document.getElementById('k3Clusters').innerHTML = k3.clusters.map(c=>`<span class="chip">{${clusterName(c).split('').join(',')}}</span>`).join('');
+}
+function buildDendrogramTree(){
+  const leaves = points.map(p=>p.label);
+  const nodes = {};
+  for(const label of leaves) nodes[label] = {id:label, labels:[label], left:null, right:null, height:0, x:0, y:0};
+  for(const s of steps){
+    const leftId = clusterName(s.c1), rightId = clusterName(s.c2), mergedId = clusterName(s.merged);
+    nodes[mergedId] = {id:mergedId, labels:s.merged.slice(), left:nodes[leftId], right:nodes[rightId], height:round3(s.distance), x:0, y:0};
+  }
+  return {root:nodes[clusterName(steps[steps.length-1].merged)], leaves};
+}
+function renderDendrogram(){
+  const svg = document.getElementById('dendrogramSvg');
+  const {root, leaves} = buildDendrogramTree();
+  const width = 960, height = 520;
+  const margin = {top:24,right:26,bottom:64,left:68};
+  const usableW = width - margin.left - margin.right;
+  const usableH = height - margin.top - margin.bottom;
+  const maxHeight = Math.max(...steps.map(s=>s.distance),1);
+  const stepX = usableW / Math.max(1, leaves.length - 1);
+  const yScale = d => margin.top + usableH - (d / maxHeight) * (usableH - 24);
+  const xPos = {}; leaves.forEach((label,i)=>xPos[label]=margin.left+i*stepX);
+  function layout(node){
+    if(!node.left && !node.right){ node.x=xPos[node.id]; node.y=yScale(0); return; }
+    layout(node.left); layout(node.right); node.x=(node.left.x+node.right.x)/2; node.y=yScale(node.height);
+  }
+  layout(root);
+  let lines='';
+  function draw(node){
+    if(!node.left || !node.right) return;
+    lines += `<line x1="${node.left.x}" y1="${node.left.y}" x2="${node.left.x}" y2="${node.y}" stroke="#2563eb" stroke-width="2.2" />`;
+    lines += `<line x1="${node.right.x}" y1="${node.right.y}" x2="${node.right.x}" y2="${node.y}" stroke="#2563eb" stroke-width="2.2" />`;
+    lines += `<line x1="${node.left.x}" y1="${node.y}" x2="${node.right.x}" y2="${node.y}" stroke="#2563eb" stroke-width="2.2" />`;
+    lines += `<circle cx="${node.x}" cy="${node.y}" r="3.5" fill="#1d4ed8" />`;
+    lines += `<text x="${node.x}" y="${node.y-8}" text-anchor="middle" font-size="11" fill="#334155">${fmt(node.height)}</text>`;
+    draw(node.left); draw(node.right);
+  }
+  draw(root);
+  let axes = `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top+usableH}" stroke="#94a3b8" stroke-width="1.4" />`;
+  axes += `<line x1="${margin.left}" y1="${margin.top+usableH}" x2="${margin.left+usableW}" y2="${margin.top+usableH}" stroke="#94a3b8" stroke-width="1.4" />`;
+  const ticks = 5;
+  for(let i=0;i<=ticks;i++){
+    const d = (maxHeight/ticks)*i, y = yScale(d);
+    axes += `<line x1="${margin.left-6}" y1="${y}" x2="${margin.left}" y2="${y}" stroke="#94a3b8" stroke-width="1.2" />`;
+    axes += `<text x="${margin.left-10}" y="${y+4}" text-anchor="end" font-size="11" fill="#64748b">${fmt(d)}</text>`;
+    axes += `<line x1="${margin.left}" y1="${y}" x2="${margin.left+usableW}" y2="${y}" stroke="#eef2f7" stroke-width="1" />`;
+  }
+  axes += `<text x="18" y="18" font-size="12" fill="#475569">Jarak</text>`;
+  let labels='';
+  for(const label of leaves){
+    const p = pointByLabel(label);
+    labels += `<text x="${xPos[label]}" y="${margin.top+usableH+22}" text-anchor="middle" font-size="13" font-weight="700" fill="#1f2937">${label}</text>`;
+    labels += `<text x="${xPos[label]}" y="${margin.top+usableH+38}" text-anchor="middle" font-size="10.5" fill="#64748b">${p.name}</text>`;
+  }
+  const cutStep = steps.find(s=>s.clusterCount===2);
+  const cutY = cutStep ? yScale(cutStep.distance)-8 : yScale(maxHeight);
+  const cutLine = `<line x1="${margin.left}" y1="${cutY}" x2="${margin.left+usableW}" y2="${cutY}" stroke="#f59e0b" stroke-width="2" stroke-dasharray="7 6" />
+                   <text x="${margin.left+usableW-4}" y="${cutY-8}" text-anchor="end" font-size="12" fill="#b45309">batas sebelum 2 cluster</text>`;
+  svg.innerHTML = `<rect x="0" y="0" width="${width}" height="${height}" rx="18" fill="#fcfdff" />${axes}${cutLine}${lines}${labels}`;
+}
+function init(){
+  const params = getParams();
+  points = parseData(params.data);
+  matrix = makeMatrix();
+  steps = agglomerative(params.linkage);
+  document.getElementById('pillLinkage').textContent = params.linkage.charAt(0).toUpperCase()+params.linkage.slice(1);
+  document.getElementById('pillData').textContent = points.length;
+  renderDataTable(); renderMatrix(); renderStepsTable(); renderDendrogram();
+}
+init();
+</script>
+</body>
+</html>

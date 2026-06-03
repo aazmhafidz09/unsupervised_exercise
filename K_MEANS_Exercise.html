@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Latihan K-Means - Segmentasi Kondisi Ruang Belajar</title>
+  <style>
+    :root{
+      --bg:#f7fbff;
+      --card:#ffffff;
+      --ink:#1f2937;
+      --muted:#64748b;
+      --line:#dbeafe;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --soft:#eff6ff;
+      --soft-2:#f8fafc;
+      --ok:#15803d;
+      --bad:#b91c1c;
+      --warn:#b45309;
+      --shadow:0 10px 30px rgba(37,99,235,.10);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:linear-gradient(180deg,#eef6ff 0%,#f8fbff 45%,#ffffff 100%);
+      color:var(--ink);
+      line-height:1.55;
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:32px 18px 64px;}
+    header{
+      background:linear-gradient(135deg,#1d4ed8,#38bdf8);
+      color:white;
+      border-radius:28px;
+      padding:34px 34px;
+      box-shadow:var(--shadow);
+      margin-bottom:24px;
+      position:relative;
+      overflow:hidden;
+    }
+    header:after{
+      content:"";
+      position:absolute;
+      width:250px;height:250px;border-radius:999px;
+      right:-80px;top:-80px;
+      background:rgba(255,255,255,.16);
+    }
+    .eyebrow{font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem;opacity:.9}
+    h1{margin:.35rem 0 .75rem;font-size:clamp(1.8rem,3vw,3rem);line-height:1.08;}
+    header p{max-width:790px;margin:0;font-size:1.05rem;opacity:.96;}
+    .grid{display:grid;gap:18px;}
+    .two{grid-template-columns:1.25fr .75fr;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:24px;
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+    h2{font-size:1.35rem;margin:0 0 14px;color:#0f172a;}
+    h3{font-size:1.05rem;margin:18px 0 10px;color:#1e3a8a;}
+    p{margin:.4rem 0 .8rem;}
+    .note{
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      color:#7c2d12;
+      border-radius:16px;
+      padding:13px 15px;
+      margin-top:12px;
+      font-size:.95rem;
+    }
+    .formula{
+      background:#0f172a;
+      color:white;
+      border-radius:18px;
+      padding:18px 20px;
+      font-size:1.05rem;
+      overflow:auto;
+    }
+    .pillrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+    .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);border-radius:999px;padding:7px 11px;font-size:.88rem;}
+    table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;overflow:hidden;border-radius:16px;border:1px solid #e2e8f0;background:white;}
+    th,td{padding:11px 12px;border-bottom:1px solid #e2e8f0;text-align:center;vertical-align:middle;}
+    th{background:#eff6ff;color:#1e3a8a;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;}
+    tr:last-child td{border-bottom:0;}
+    td.left, th.left{text-align:left;}
+    .small{font-size:.88rem;color:var(--muted);}
+    input,select,textarea{
+      width:100%;
+      min-width:70px;
+      border:1px solid #cbd5e1;
+      border-radius:10px;
+      padding:9px 10px;
+      font:inherit;
+      background:white;
+      color:#111827;
+      outline:none;
+      transition:.15s ease;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+    .narrow input{min-width:64px;}
+    .correct{border-color:#22c55e !important;background:#f0fdf4 !important;}
+    .wrong{border-color:#ef4444 !important;background:#fef2f2 !important;}
+    .section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+    .badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;font-size:.82rem;padding:6px 10px;white-space:nowrap;}
+    .btnrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+    button{
+      border:0;
+      border-radius:999px;
+      padding:11px 16px;
+      font-weight:700;
+      cursor:pointer;
+      background:var(--primary);
+      color:white;
+      transition:.15s ease;
+      box-shadow:0 8px 18px rgba(37,99,235,.18);
+    }
+    button:hover{background:var(--primary-2);transform:translateY(-1px);}
+    button.secondary{background:#e0f2fe;color:#075985;box-shadow:none;}
+    button.secondary:hover{background:#bae6fd;}
+    button.ghost{background:#f1f5f9;color:#334155;box-shadow:none;}
+    button.ghost:hover{background:#e2e8f0;}
+    #result{
+      display:none;
+      border-radius:18px;
+      padding:16px 18px;
+      margin-top:16px;
+      background:#f8fafc;
+      border:1px solid #cbd5e1;
+      font-weight:700;
+    }
+    .answerBox{display:none;margin-top:14px;background:#f8fafc;border:1px dashed #94a3b8;border-radius:18px;padding:18px;}
+    .answerBox.show{display:block;}
+    .answerBox code{background:#e2e8f0;border-radius:7px;padding:2px 6px;}
+    details{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:12px 14px;margin-top:12px;}
+    summary{cursor:pointer;font-weight:800;color:#1e3a8a;}
+    .clusterdesc{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px;}
+    .desc{border:1px solid #e2e8f0;background:#fff;border-radius:16px;padding:14px;}
+    .desc strong{display:block;color:#1e3a8a;margin-bottom:4px;}
+    .print-note{font-size:.86rem;color:#64748b;margin-top:8px;}
+    .scroll{overflow-x:auto;}
+    .mini{font-size:.82rem;}
+    @media (max-width:860px){.two{grid-template-columns:1fr}.clusterdesc{grid-template-columns:1fr}header{padding:26px 22px}.card{padding:18px}th,td{padding:8px 9px}.wrap{padding:20px 12px 48px}}
+    @media print{
+      body{background:white}.wrap{max-width:none;padding:0}header,.card{box-shadow:none}button,#result{display:none!important}input,select,textarea{border:1px solid #999;background:white}.answerBox{display:block!important}.no-print{display:none!important}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="eyebrow">Latihan K-Means Clustering</div>
+      <h1>Segmentasi Kondisi Ruang Belajar Berdasarkan Data Sensor</h1>
+      <p>Studi kasus ini sengaja dibuat berbeda: menggunakan <b>4 fitur</b>, <b>3 klaster</b>, dan form perhitungan yang meminta mahasiswa memahami komponen jarak, assignment klaster, serta recompute centroid.</p>
+      <div class="pillrow">
+        <span class="pill">K = 3</span>
+        <span class="pill">9 data ruang</span>
+        <span class="pill">4 fitur sensor</span>
+        <span class="pill">2 iterasi</span>
+        <span class="pill">Euclidean distance</span>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>Soal</h2>
+        <span class="badge">Studi Kasus Baru</span>
+      </div>
+      <p>Sebuah kampus ingin mengelompokkan kondisi beberapa ruang belajar berdasarkan data sensor harian. Tujuannya adalah membantu tim fasilitas menentukan pola kondisi ruang, misalnya ruang yang cenderung nyaman, ruang yang perlu perhatian kualitas udara, atau ruang yang perlu pengendalian kebisingan.</p>
+      <p>Data telah dinormalisasi ke skala <b>1 sampai 10</b>. Semakin tinggi nilai suatu fitur berarti kondisi fitur tersebut semakin besar/intens.</p>
+      <div class="grid two">
+        <div>
+          <h3>Dataset Ruang Belajar</h3>
+          <div class="scroll"><table id="dataTable"></table></div>
+        </div>
+        <div>
+          <h3>Centroid Awal</h3>
+          <div class="scroll"><table id="centroidTable"></table></div>
+          <div class="note">
+            <b>Catatan:</b><br />
+            1. Gunakan ketelitian <b>3 angka di belakang koma</b>.<br />
+            2. Jika ada jarak yang sama, pilih klaster dengan nomor terkecil.<br />
+            3. Gunakan rumus jarak Euclidean pada 4 fitur.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Rumus Jarak</h2>
+      <p>Untuk data ruang \(X=(x_1,x_2,x_3,x_4)\) dan centroid \(C=(c_1,c_2,c_3,c_4)\), gunakan:</p>
+      <div class="formula">d(X,C) = √[(Suhu−C<sub>suhu</sub>)² + (CO₂−C<sub>co2</sub>)² + (Bising−C<sub>bising</sub>)² + (Cahaya−C<sub>cahaya</sub>)²]</div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>Latihan A — Perhitungan Jarak Detail Iterasi 1</h2>
+        <span class="badge">Isi komponen jarak</span>
+      </div>
+      <p>Bagian ini berbeda dari form jarak biasa. Isi kuadrat selisih tiap fitur, total kuadrat, lalu hasil akar/jarak.</p>
+      <div class="scroll"><table id="detailTable"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>Latihan B — Assignment Klaster Iterasi 1</h2>
+        <span class="badge">Centroid awal</span>
+      </div>
+      <p>Hitung jarak setiap ruang ke C1, C2, dan C3. Setelah itu pilih klaster dengan jarak paling kecil.</p>
+      <div class="scroll"><table id="iter1Table"></table></div>
+      <h3>Recompute Centroid Setelah Iterasi 1</h3>
+      <p>Hitung centroid baru berdasarkan rata-rata fitur dari anggota masing-masing klaster.</p>
+      <div class="scroll"><table id="recompute1Table"></table></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <h2>Latihan C — Assignment Klaster Iterasi 2</h2>
+        <span class="badge">Centroid hasil iterasi 1</span>
+      </div>
+      <p>Gunakan centroid baru hasil recompute iterasi 1, lalu ulangi proses assignment.</p>
+      <div class="scroll"><table id="iter2Table"></table></div>
+      <h3>Recompute Centroid Setelah Iterasi 2</h3>
+      <div class="scroll"><table id="recompute2Table"></table></div>
+    </section>
+
+    <section class="card">
+      <h2>Latihan D — Interpretasi Klaster</h2>
+      <p>Setelah perhitungan selesai, jelaskan makna tiap klaster secara singkat berdasarkan nilai centroid akhirnya.</p>
+      <textarea id="reflection" rows="5" placeholder="Contoh: C1 berisi ruang dengan suhu, CO₂, dan kebisingan tinggi serta pencahayaan rendah, sehingga dapat diprioritaskan untuk perbaikan ventilasi dan pencahayaan."></textarea>
+      <p class="small">Bagian interpretasi tidak dihitung otomatis karena jawabannya bisa bervariasi, tetapi harus tetap mengacu pada centroid akhir.</p>
+    </section>
+
+    <section class="card no-print">
+      <h2>Cek Jawaban</h2>
+      <p>Klik tombol berikut untuk mengecek isian angka dan klaster. Toleransi jawaban numerik adalah ±0,01.</p>
+      <div class="btnrow">
+        <button onclick="checkAnswers()">Cek Jawaban</button>
+        <button class="secondary" onclick="toggleAnswer()" disabled>Tampilkan/Sembunyikan Kunci</button>
+        <button class="ghost" onclick="resetForm()">Reset Isian</button>
+        <button class="ghost" onclick="window.print()">Cetak / Simpan PDF</button>
+      </div>
+      <div id="result"></div>
+    </section>
+
+    <section class="card answerBox" id="answerBox">
+      <h2>Kunci Jawaban Ringkas</h2>
+      <p><b>Iterasi 1:</b> C1 = {R1, R2, R8}, C2 = {R3, R4, R7, R9}, C3 = {R5, R6}.</p>
+      <p><b>Centroid baru setelah iterasi 1:</b></p>
+      <ul>
+        <li>C1 = (8.000, 9.000, 7.000, 3.000)</li>
+        <li>C2 = (2.500, 3.250, 2.500, 8.500)</li>
+        <li>C3 = (5.500, 4.500, 7.500, 5.500)</li>
+      </ul>
+      <p><b>Iterasi 2:</b> pembagian klaster tetap sama, sehingga centroid tidak berubah.</p>
+      <div class="clusterdesc">
+        <div class="desc"><strong>C1</strong>Ruang dengan suhu, CO₂, dan kebisingan tinggi serta pencahayaan rendah. Cocok diberi prioritas ventilasi, pengaturan okupansi, dan pencahayaan.</div>
+        <div class="desc"><strong>C2</strong>Ruang yang relatif nyaman: suhu rendah, CO₂ rendah, bising rendah, dan pencahayaan tinggi.</div>
+        <div class="desc"><strong>C3</strong>Ruang dengan kondisi sedang, tetapi kebisingan cukup tinggi. Cocok untuk evaluasi tata ruang atau sumber suara.</div>
+      </div>
+      <details>
+        <summary>Lihat tabel jarak lengkap</summary>
+        <div id="answerTables"></div>
+      </details>
+    </section>
+  </div>
+
+  <script>
+    const features = ["Suhu", "CO₂", "Kebisingan", "Pencahayaan"];
+    const data = [
+      {id:"R1", values:[8,9,7,3]},
+      {id:"R2", values:[7,8,6,4]},
+      {id:"R3", values:[2,3,2,9]},
+      {id:"R4", values:[3,2,3,8]},
+      {id:"R5", values:[5,5,8,5]},
+      {id:"R6", values:[6,4,7,6]},
+      {id:"R7", values:[1,2,1,10]},
+      {id:"R8", values:[9,10,8,2]},
+      {id:"R9", values:[4,6,4,7]},
+    ];
+    const initialCentroids = {
+      C1:[8,9,7,3],
+      C2:[2,3,2,9],
+      C3:[5,5,8,5]
+    };
+    const detailPairs = [
+      {dataId:"R2", centroid:"C1"},
+      {dataId:"R6", centroid:"C3"},
+      {dataId:"R9", centroid:"C2"}
+    ];
+    const tolerance = 0.01;
+
+    function dist(a,b){ return Math.sqrt(a.reduce((s,v,i)=>s + Math.pow(v-b[i],2),0)); }
+    function fmt(x){ return Number(x).toFixed(3); }
+    function assign(centroids){
+      const keys = Object.keys(centroids);
+      const rows = data.map(d => {
+        const distances = {};
+        keys.forEach(k => distances[k] = dist(d.values, centroids[k]));
+        let best = keys[0];
+        keys.forEach(k => { if (distances[k] < distances[best] - 1e-12) best = k; });
+        return {id:d.id, values:d.values, distances, cluster:best};
+      });
+      const groups = {};
+      keys.forEach(k => groups[k] = rows.filter(r => r.cluster === k).map(r => r.id));
+      return {rows, groups};
+    }
+    function recompute(groups){
+      const out = {};
+      Object.keys(groups).forEach(k => {
+        const ids = groups[k];
+        const vals = ids.map(id => data.find(d => d.id === id).values);
+        out[k] = features.map((_,i) => vals.reduce((s,row)=>s+row[i],0) / vals.length);
+      });
+      return out;
+    }
+    const iter1 = assign(initialCentroids);
+    const centroidAfter1 = recompute(iter1.groups);
+    const iter2 = assign(centroidAfter1);
+    const centroidAfter2 = recompute(iter2.groups);
+
+    function input(name, answer, cls=""){
+      return `<input class="checkable ${cls}" data-answer="${answer}" aria-label="${name}" />`;
+    }
+    function selectCluster(name, answer){
+      return `<select class="checkable" data-answer="${answer}" aria-label="${name}">
+        <option value="">Pilih</option><option value="C1">C1</option><option value="C2">C2</option><option value="C3">C3</option>
+      </select>`;
+    }
+    function renderDataTable(){
+      let html = `<thead><tr><th>ID Ruang</th>${features.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>`;
+      data.forEach(d => html += `<tr><td><b>${d.id}</b></td>${d.values.map(v=>`<td>${v}</td>`).join("")}</tr>`);
+      html += `</tbody>`;
+      document.getElementById("dataTable").innerHTML = html;
+    }
+    function renderCentroidTable(){
+      let html = `<thead><tr><th>Centroid</th>${features.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>`;
+      Object.entries(initialCentroids).forEach(([k,v]) => html += `<tr><td><b>${k}</b></td>${v.map(x=>`<td>${x}</td>`).join("")}</tr>`);
+      html += `</tbody>`;
+      document.getElementById("centroidTable").innerHTML = html;
+    }
+    function renderDetailTable(){
+      let html = `<thead><tr><th>Pasangan</th>${features.map(f=>`<th>Δ ${f}²</th>`).join("")}<th>Total Kuadrat</th><th>Jarak</th></tr></thead><tbody>`;
+      detailPairs.forEach(p => {
+        const d = data.find(x => x.id === p.dataId);
+        const c = initialCentroids[p.centroid];
+        const components = d.values.map((v,i)=>Math.pow(v-c[i],2));
+        const total = components.reduce((a,b)=>a+b,0);
+        html += `<tr class="narrow"><td class="left"><b>${p.dataId} ke ${p.centroid}</b><br><span class="small">${JSON.stringify(d.values)} ke ${JSON.stringify(c)}</span></td>${components.map((v,i)=>`<td>${input(`${p.dataId}-${p.centroid}-${features[i]}`, fmt(v))}</td>`).join("")}<td>${input(`${p.dataId}-${p.centroid}-total`, fmt(total))}</td><td>${input(`${p.dataId}-${p.centroid}-jarak`, fmt(Math.sqrt(total)))}</td></tr>`;
+      });
+      html += `</tbody>`;
+      document.getElementById("detailTable").innerHTML = html;
+    }
+    function renderAssignmentTable(targetId, iter){
+      let html = `<thead><tr><th>ID Ruang</th><th>Jarak ke C1</th><th>Jarak ke C2</th><th>Jarak ke C3</th><th>Klaster</th></tr></thead><tbody>`;
+      iter.rows.forEach(r => {
+        html += `<tr><td><b>${r.id}</b></td><td>${input(`${targetId}-${r.id}-C1`, fmt(r.distances.C1))}</td><td>${input(`${targetId}-${r.id}-C2`, fmt(r.distances.C2))}</td><td>${input(`${targetId}-${r.id}-C3`, fmt(r.distances.C3))}</td><td>${selectCluster(`${targetId}-${r.id}-cluster`, r.cluster)}</td></tr>`;
+      });
+      html += `</tbody>`;
+      document.getElementById(targetId).innerHTML = html;
+    }
+    function renderRecomputeTable(targetId, centroids, groups){
+      let html = `<thead><tr><th>Centroid</th><th>Jumlah Anggota</th>${features.map(f=>`<th>${f}</th>`).join("")}</tr></thead><tbody>`;
+      Object.keys(centroids).forEach(k => {
+        html += `<tr><td><b>${k}</b><br><span class="small">Anggota: ${groups[k].join(", ")}</span></td><td>${input(`${targetId}-${k}-n`, groups[k].length.toFixed(3))}</td>${centroids[k].map((v,i)=>`<td>${input(`${targetId}-${k}-${features[i]}`, fmt(v))}</td>`).join("")}</tr>`;
+      });
+      html += `</tbody>`;
+      document.getElementById(targetId).innerHTML = html;
+    }
+    function renderAnswerTables(){
+      function plainAssignment(title, iter){
+        let html = `<h3>${title}</h3><div class="scroll"><table><thead><tr><th>ID</th><th>d(C1)</th><th>d(C2)</th><th>d(C3)</th><th>Klaster</th></tr></thead><tbody>`;
+        iter.rows.forEach(r => html += `<tr><td><b>${r.id}</b></td><td>${fmt(r.distances.C1)}</td><td>${fmt(r.distances.C2)}</td><td>${fmt(r.distances.C3)}</td><td><b>${r.cluster}</b></td></tr>`);
+        html += `</tbody></table></div>`;
+        return html;
+      }
+      document.getElementById("answerTables").innerHTML = plainAssignment("Iterasi 1", iter1) + plainAssignment("Iterasi 2", iter2);
+    }
+    function normalizeText(s){ return String(s || "").trim().toUpperCase().replace(",", "."); }
+    function checkAnswers(){
+      const fields = Array.from(document.querySelectorAll(".checkable"));
+      let correct = 0;
+      fields.forEach(el => {
+        const ans = el.dataset.answer;
+        const val = normalizeText(el.value);
+        let ok = false;
+        if (/^C[123]$/.test(ans)) {
+          ok = val === ans;
+        } else {
+          const nVal = Number(val);
+          const nAns = Number(ans);
+          ok = !Number.isNaN(nVal) && Math.abs(nVal - nAns) <= tolerance;
+        }
+        el.classList.remove("correct", "wrong");
+        el.classList.add(ok ? "correct" : "wrong");
+        if (ok) correct++;
+      });
+      const pct = Math.round(correct / fields.length * 100);
+      const result = document.getElementById("result");
+      result.style.display = "block";
+      result.innerHTML = `Skor: ${correct}/${fields.length} benar (${pct}%). ${pct >= 85 ? "Bagus. Perhitungan sudah kuat." : "Cek kembali selisih kuadrat, akar jarak, dan pemilihan klaster terkecil."}`;
+      result.style.borderColor = pct >= 85 ? "#86efac" : "#fecaca";
+      result.style.background = pct >= 85 ? "#f0fdf4" : "#fff7ed";
+      result.style.color = pct >= 85 ? "#166534" : "#9a3412";
+    }
+    function toggleAnswer(){ document.getElementById("answerBox").classList.toggle("show"); }
+    function resetForm(){
+      document.querySelectorAll("input, select, textarea").forEach(el => { el.value = ""; el.classList.remove("correct", "wrong"); });
+      document.getElementById("result").style.display = "none";
+    }
+    renderDataTable();
+    renderCentroidTable();
+    renderDetailTable();
+    renderAssignmentTable("iter1Table", iter1);
+    renderRecomputeTable("recompute1Table", centroidAfter1, iter1.groups);
+    renderAssignmentTable("iter2Table", iter2);
+    renderRecomputeTable("recompute2Table", centroidAfter2, iter2.groups);
+    renderAnswerTables();
+  </script>
+</body>
+</html>
